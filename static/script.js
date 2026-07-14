@@ -61,11 +61,47 @@ async function loadWeather() {
 
         }
 
+        updateFavicon(data.warnings);
+
     } catch (e) {
 
         console.log(e);
 
     }
+
+}
+
+// ==========================================
+// Favicon đổi theo thời tiết hiện tại
+// ==========================================
+
+// Thứ tự ưu tiên khi có nhiều cảnh báo cùng lúc
+const FAVICON_PRIORITY = ["heat", "wind", "rain", "uv"];
+
+function updateFavicon(warnings) {
+
+    let type = "normal";
+
+    if (warnings && warnings.length > 0) {
+
+        const types = warnings.map(w => w.type);
+
+        type = FAVICON_PRIORITY.find(t => types.includes(t)) || warnings[0].type;
+
+    }
+
+    const href = `/static/weather-icons/favicon-${type}-32.png`;
+
+    let link = document.querySelector("link[rel='icon']");
+
+    if (!link) {
+        link = document.createElement("link");
+        link.rel = "icon";
+        document.head.appendChild(link);
+    }
+
+    link.type = "image/png";
+    link.href = href;
 
 }
 
