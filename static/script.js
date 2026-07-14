@@ -75,13 +75,72 @@ loadWeather();
 // Tự động cập nhật mỗi 30 giây
 setInterval(loadWeather, 30000);
 
-// Đăng ký Service Worker
+// ==========================================
+// Web Push: đăng ký nhận thông báo trên máy
+// ==========================================
+
+function urlBase64ToUint8Array(base64String) {
+
+    const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, "+").replace(/_/g, "/");
+    const rawData = atob(base64);
+
+    return Uint8Array.from([...rawData].map(c => c.charCodeAt(0)));
+
+}
+
+async function subscribeToPush(registration) {
+
+    if (!("PushManager" in window)) {
+        console.log("Trình duyệt không hỗ trợ Push");
+        return;
+    }
+
+    const permission = await Notification.requestPermission();
+
+    if (permission !== "granted") {
+        console.log("Người dùng chưa cho phép thông báo");
+        return;
+    }
+
+    // Nếu đã subscribe từ trước thì dùng lại, không tạo mới
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (!subscription) {
+
+        const keyResponse = await fetch("/api/vapid-public-key");
+        const keyData = await keyResponse.json();
+
+        subscription = await registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(keyData.publicKey)
+        });
+
+    }
+
+    await fetch("/api/subscribe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(subscription)
+    });
+
+    console.log("Đã đăng ký nhận cảnh báo thời tiết trên máy này");
+
+}
+
+// Đăng ký Service Worker + subscribe push
 if ("serviceWorker" in navigator) {
 
     window.addEventListener("load", () => {
 
         navigator.serviceWorker.register("/service-worker.js")
-            .then(() => console.log("Service Worker registered"))
+            .then(registration => {
+
+                console.log("Service Worker registered");
+
+                subscribeToPush(registration);
+
+            })
             .catch(err => console.log(err));
 
     });
