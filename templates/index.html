@@ -11,39 +11,56 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+<div class="page">
 
-  <h1>🌦 T-Weather</h1>
-  <p class="subtitle">Hệ thống cảnh báo thời tiết</p>
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">🌦</div>
+      <div>
+        <h1>T-Weather</h1>
+        <p class="subtitle">Hệ thống cảnh báo thời tiết</p>
+      </div>
+    </div>
+  </header>
 
   <section class="area">
     <h3>📍 Khu vực theo dõi</h3>
     <p>GPS cố định từ config.py</p>
   </section>
 
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-eyebrow">Nhiệt độ hiện tại</div>
+      <div class="hero-temp"><span id="temperature">--</span></div>
+    </div>
+    <div class="dial-outer" id="rainDial">
+      <div class="dial-inner">
+        <div class="dial-num"><span id="rain">--</span></div>
+        <div class="dial-label">Mưa</div>
+      </div>
+    </div>
+  </section>
+
   <section class="grid">
-    <div class="card">
-      <div class="label">🌡 Nhiệt độ</div>
-      <div class="value" id="temperature">--</div>
-    </div>
-    <div class="card">
+    <div class="card" data-bar="humidity">
       <div class="label">💧 Độ ẩm</div>
-      <div class="value" id="humidity">--</div>
+      <div class="value"><span id="humidity">--</span></div>
+      <div class="bar"><i></i></div>
     </div>
-    <div class="card">
-      <div class="label">🌧 Xác suất mưa</div>
-      <div class="value" id="rain">--</div>
-    </div>
-    <div class="card">
+    <div class="card" data-bar="cloud">
       <div class="label">☁ Mây</div>
-      <div class="value" id="cloud">--</div>
+      <div class="value"><span id="cloud">--</span></div>
+      <div class="bar"><i></i></div>
     </div>
-    <div class="card">
+    <div class="card" data-bar="uv">
       <div class="label">☀ UV</div>
-      <div class="value" id="uv">--</div>
+      <div class="value"><span id="uv">--</span></div>
+      <div class="bar"><i></i></div>
     </div>
-    <div class="card">
+    <div class="card" data-bar="wind">
       <div class="label">💨 Gió</div>
-      <div class="value" id="wind">--</div>
+      <div class="value"><span id="wind">--</span></div>
+      <div class="bar"><i></i></div>
     </div>
   </section>
 
@@ -54,6 +71,8 @@
 
   <p class="update">Cập nhật: <span id="update">--</span></p>
 
-  <script src="/static/script.js"></script>
+</div>
+
+<script src="/static/script.js"></script>
 </body>
 </html>
