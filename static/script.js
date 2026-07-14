@@ -178,6 +178,7 @@ async function loadWeather() {
         if (hero) hero.classList.toggle("risk", current.rain_probability >= 60);
 
         const warningBox = document.getElementById("warnings");
+        const alertPing = document.getElementById("alertPing");
 
         warningBox.innerHTML = "";
 
@@ -185,6 +186,8 @@ async function loadWeather() {
 
             warningBox.innerHTML =
                 "<div class='warning-item safe'><h4>✅ An toàn</h4><p>Hiện chưa có cảnh báo.</p></div>";
+
+            if (alertPing) alertPing.classList.add("hidden");
 
         } else {
 
@@ -198,6 +201,8 @@ async function loadWeather() {
                 `;
 
             });
+
+            if (alertPing) alertPing.classList.remove("hidden");
 
         }
 
