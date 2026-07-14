@@ -11,6 +11,16 @@
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
+<div class="sky" aria-hidden="true">
+  <div class="clouds">
+    <span class="cloud c1"></span>
+    <span class="cloud c2"></span>
+    <span class="cloud c3"></span>
+  </div>
+  <div class="rain" id="rainLayer"></div>
+</div>
+
 <div class="page">
 
   <header class="topbar">
@@ -25,10 +35,10 @@
 
   <section class="area">
     <h3>📍 Khu vực theo dõi</h3>
-    <p>GPS cố định từ nhà riêng Hữu Tài</p>
+    <p>GPS cố định từ config.py</p>
   </section>
 
-  <section class="hero">
+  <section class="hero" id="hero">
     <div class="hero-left">
       <div class="hero-eyebrow">Nhiệt độ hiện tại</div>
       <div class="hero-temp"><span id="temperature">--</span></div>
