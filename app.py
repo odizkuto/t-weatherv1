@@ -8,6 +8,7 @@ app.py
 from flask import Flask
 from flask import jsonify
 from flask import render_template
+from flask import send_from_directory
 
 from flask_cors import CORS
 
@@ -29,8 +30,12 @@ CORS(app)
 
 @app.route("/")
 def index():
-
     return render_template("index.html")
+
+
+@app.route("/service-worker.js")
+def service_worker():
+    return send_from_directory(".", "service-worker.js")
 
 
 @app.route("/api/weather")
@@ -39,11 +44,8 @@ def api_weather():
     current = weather.current()
 
     if current is None:
-
         return jsonify({
-
             "status": "offline"
-
         })
 
     result = analyzer.analyze(current)
@@ -59,31 +61,18 @@ def history():
     data = []
 
     for row in rows:
-
         data.append({
-
             "id": row[0],
-
             "time": row[1],
-
             "temperature": row[2],
-
             "humidity": row[3],
-
             "rain": row[4],
-
             "rain_probability": row[5],
-
             "cloud": row[6],
-
             "uv": row[7],
-
             "wind": row[8],
-
             "status": row[9],
-
             "created_at": row[10]
-
         })
 
     return jsonify(data)
@@ -95,33 +84,20 @@ def latest():
     row = db.latest()
 
     if row is None:
-
         return jsonify({})
 
     return jsonify({
-
         "id": row[0],
-
         "time": row[1],
-
         "temperature": row[2],
-
         "humidity": row[3],
-
         "rain": row[4],
-
         "rain_probability": row[5],
-
         "cloud": row[6],
-
         "uv": row[7],
-
         "wind": row[8],
-
         "status": row[9],
-
         "created_at": row[10]
-
     })
 
 
@@ -130,11 +106,7 @@ if __name__ == "__main__":
     start()
 
     app.run(
-
         host=HOST,
-
         port=PORT,
-
         debug=DEBUG
-
     )
