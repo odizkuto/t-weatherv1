@@ -1,95 +1,59 @@
 <!DOCTYPE html>
 <html lang="vi">
-
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T-Weather</title>
 
-    <meta charset="UTF-8">
+<link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+<link rel="apple-touch-icon" sizes="180x180" href="/static/apple-touch-icon.png">
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>T-Weather</title>
-
-    <link rel="stylesheet" href="/static/style.css">
-
+<link rel="stylesheet" href="/static/style.css">
 </head>
-
 <body>
 
-<div class="container">
+  <h1>🌦 T-Weather</h1>
+  <p class="subtitle">Hệ thống cảnh báo thời tiết</p>
 
-    <header>
+  <section class="area">
+    <h3>📍 Khu vực theo dõi</h3>
+    <p>GPS cố định từ config.py</p>
+  </section>
 
-        <h1>🌦 T-Weather</h1>
-
-        <p>Hệ thống cảnh báo thời tiết</p>
-
-    </header>
-
+  <section class="grid">
     <div class="card">
-
-        <h2>📍 Khu vực theo dõi</h2>
-
-        <p>GPS cố định từ config.py</p>
-
+      <div class="label">🌡 Nhiệt độ</div>
+      <div class="value" id="temperature">--</div>
     </div>
-
-    <div class="grid">
-
-        <div class="item">
-            <h3>🌡 Nhiệt độ</h3>
-            <span id="temperature">--</span>
-        </div>
-
-        <div class="item">
-            <h3>💧 Độ ẩm</h3>
-            <span id="humidity">--</span>
-        </div>
-
-        <div class="item">
-            <h3>🌧 Mưa</h3>
-            <span id="rain">--</span>
-        </div>
-
-        <div class="item">
-            <h3>☁ Mây</h3>
-            <span id="cloud">--</span>
-        </div>
-
-        <div class="item">
-            <h3>☀ UV</h3>
-            <span id="uv">--</span>
-        </div>
-
-        <div class="item">
-            <h3>💨 Gió</h3>
-            <span id="wind">--</span>
-        </div>
-
+    <div class="card">
+      <div class="label">💧 Độ ẩm</div>
+      <div class="value" id="humidity">--</div>
     </div>
-
-    <div class="warning">
-
-        <h2>⚠ Cảnh báo</h2>
-
-        <div id="warnings">
-
-            Không có cảnh báo.
-
-        </div>
-
+    <div class="card">
+      <div class="label">🌧 Xác suất mưa</div>
+      <div class="value" id="rain">--</div>
     </div>
-
-    <div class="footer">
-
-        Cập nhật:
-        <span id="update">--</span>
-
+    <div class="card">
+      <div class="label">☁ Mây</div>
+      <div class="value" id="cloud">--</div>
     </div>
+    <div class="card">
+      <div class="label">☀ UV</div>
+      <div class="value" id="uv">--</div>
+    </div>
+    <div class="card">
+      <div class="label">💨 Gió</div>
+      <div class="value" id="wind">--</div>
+    </div>
+  </section>
 
-</div>
+  <section class="warnings-section">
+    <h3>⚠ Cảnh báo</h3>
+    <div id="warnings">Đang tải...</div>
+  </section>
 
-<script src="/static/script.js"></script>
+  <p class="update">Cập nhật: <span id="update">--</span></p>
 
+  <script src="/static/script.js"></script>
 </body>
-
 </html>
