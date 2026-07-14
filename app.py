@@ -17,6 +17,7 @@ from weather import weather
 from analyzer import analyzer
 from database import db
 from scheduler import start
+from notifier import notifier
 
 from config import (
     HOST,
@@ -129,6 +130,45 @@ def subscribe():
     )
 
     return jsonify({"status": "ok"})
+
+
+@app.route("/api/test-push")
+def test_push():
+    """
+    Gửi thử 1 tin nhắn push đến tất cả thiết bị đã đăng ký,
+    không cần chờ có cảnh báo thời tiết thật xảy ra.
+    Dùng để kiểm tra tính năng thông báo trên điện thoại.
+    """
+
+    subscriptions = db.get_subscriptions()
+
+    if not subscriptions:
+        return jsonify({
+            "status": "error",
+            "message": "Chưa có thiết bị nào đăng ký nhận thông báo. "
+                       "Mở trang trên điện thoại và cho phép thông báo trước."
+        }), 400
+
+    test_warning = [{
+        "title": "🔔 Test thông báo T-Weather",
+        "message": "Nếu bạn thấy tin nhắn này, tính năng push đã hoạt động!",
+        "type": "test"
+    }]
+
+    expired = notifier.broadcast(subscriptions, test_warning)
+
+    if expired:
+        for endpoint in expired:
+            db.remove_subscription(endpoint)
+
+    sent = len(subscriptions) - (len(expired) if expired else 0)
+
+    return jsonify({
+        "status": "ok",
+        "total_subscriptions": len(subscriptions),
+        "sent": sent,
+        "expired_removed": len(expired) if expired else 0
+    })
 
 
 if __name__ == "__main__":
