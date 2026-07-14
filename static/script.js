@@ -13,6 +13,95 @@ function setGauge(el, value, max) {
 
 }
 
+// ==========================================
+// Đếm số mượt: chạy từ giá trị cũ -> giá trị mới thay vì nhảy khựng
+// ==========================================
+
+function animateNumber(id, value, decimals, suffix) {
+
+    const el = document.getElementById(id);
+
+    if (!el) return;
+
+    const target = Number(value);
+
+    if (Number.isNaN(target)) {
+        el.textContent = value;
+        return;
+    }
+
+    const start = parseFloat(el.dataset.raw || "0");
+    const t0 = performance.now();
+    const duration = 700;
+
+    function tick(now) {
+
+        const t = Math.min(1, (now - t0) / duration);
+        const eased = 1 - Math.pow(1 - t, 3);
+        const current = start + (target - start) * eased;
+
+        el.textContent = current.toFixed(decimals) + (suffix || "");
+
+        if (t < 1) {
+            requestAnimationFrame(tick);
+        } else {
+            el.dataset.raw = String(target);
+        }
+
+    }
+
+    requestAnimationFrame(tick);
+
+}
+
+// ==========================================
+// Nền động: mật độ mưa + độ đậm mây theo dữ liệu thật
+// ==========================================
+
+function updateRainLayer(probability) {
+
+    const layer = document.getElementById("rainLayer");
+
+    if (!layer) return;
+
+    const desired = Math.round((probability / 100) * 40);
+
+    if (layer.dataset.count !== String(desired)) {
+
+        layer.innerHTML = "";
+
+        for (let i = 0; i < desired; i++) {
+
+            const drop = document.createElement("span");
+
+            drop.className = "drop";
+            drop.style.left = (Math.random() * 100) + "%";
+            drop.style.animationDuration = (1.1 + Math.random() * 0.9) + "s";
+            drop.style.animationDelay = (Math.random() * 3) + "s";
+            drop.style.opacity = (0.3 + Math.random() * 0.5).toFixed(2);
+
+            layer.appendChild(drop);
+
+        }
+
+        layer.dataset.count = String(desired);
+
+    }
+
+    layer.style.opacity = probability < 15 ? "0" : "1";
+
+}
+
+function updateClouds(cloudPercent) {
+
+    const clouds = document.querySelector(".clouds");
+
+    if (!clouds) return;
+
+    clouds.style.setProperty("--cloud-opacity", (cloudPercent / 100).toFixed(2));
+
+}
+
 async function loadWeather() {
 
     try {
@@ -31,23 +120,12 @@ async function loadWeather() {
 
         const current = data.current;
 
-        document.getElementById("temperature").innerHTML =
-            current.temperature + " °C";
-
-        document.getElementById("humidity").innerHTML =
-            current.humidity + " %";
-
-        document.getElementById("rain").innerHTML =
-            current.rain_probability;
-
-        document.getElementById("cloud").innerHTML =
-            current.cloud + " %";
-
-        document.getElementById("uv").innerHTML =
-            current.uv;
-
-        document.getElementById("wind").innerHTML =
-            current.wind + " km/h";
+        animateNumber("temperature", current.temperature, 1, " °C");
+        animateNumber("humidity", current.humidity, 0, " %");
+        animateNumber("rain", current.rain_probability, 0, "");
+        animateNumber("cloud", current.cloud, 0, " %");
+        animateNumber("uv", current.uv, 2, "");
+        animateNumber("wind", current.wind, 1, " km/h");
 
         document.getElementById("update").innerHTML =
             current.time;
@@ -60,6 +138,14 @@ async function loadWeather() {
         setGauge(document.querySelector('[data-bar="cloud"] .bar'), current.cloud, 100);
         setGauge(document.querySelector('[data-bar="uv"] .bar'), current.uv, 12);
         setGauge(document.querySelector('[data-bar="wind"] .bar'), current.wind, 40);
+
+        // Nền động: mưa rơi + mây đậm nhạt theo dữ liệu thật
+        updateRainLayer(current.rain_probability);
+        updateClouds(current.cloud);
+
+        // Glow nhẹ quanh khối hero khi rủi ro mưa cao
+        const hero = document.getElementById("hero");
+        if (hero) hero.classList.toggle("risk", current.rain_probability >= 60);
 
         const warningBox = document.getElementById("warnings");
 
