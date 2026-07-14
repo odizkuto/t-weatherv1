@@ -29,13 +29,104 @@ body{
         radial-gradient(circle at 100% 10%, rgba(62,231,216,0.08), transparent 40%),
         var(--bg-0);
     min-height:100vh;
+    overflow-x:hidden;
+}
+
+/* ==========================================
+   Nền động: mây trôi + mưa rơi (phản ứng theo dữ liệu thật)
+   ========================================== */
+
+.sky{
+    position:fixed;
+    inset:0;
+    z-index:0;
+    overflow:hidden;
+    pointer-events:none;
+}
+
+.clouds{
+    --cloud-opacity:0.4;
+    position:absolute;
+    inset:0;
+}
+
+.cloud{
+    position:absolute;
+    width:340px;
+    height:340px;
+    border-radius:50%;
+    filter:blur(60px);
+    background:radial-gradient(circle, rgba(140,158,255,0.4), transparent 70%);
+    opacity:calc(0.15 + var(--cloud-opacity) * 0.55);
+    transition:opacity 1.2s ease;
+}
+
+.cloud.c1{ top:-6%;  left:-12%; animation:driftA 26s ease-in-out infinite; }
+.cloud.c2{ top:22%;  left:45%;  animation:driftB 32s ease-in-out infinite; background:radial-gradient(circle, rgba(62,231,216,0.28), transparent 70%); }
+.cloud.c3{ top:55%;  left:-20%; animation:driftA 38s ease-in-out infinite reverse; }
+
+@keyframes driftA{
+    0%,100%{ transform:translate(0,0); }
+    50%{ transform:translate(6vw, 3vh); }
+}
+@keyframes driftB{
+    0%,100%{ transform:translate(0,0); }
+    50%{ transform:translate(-8vw, 4vh); }
+}
+
+.rain{
+    position:absolute;
+    inset:0;
+    opacity:0;
+    transition:opacity 1s ease;
+}
+
+.rain .drop{
+    position:absolute;
+    top:-8%;
+    width:2px;
+    height:16px;
+    border-radius:2px;
+    background:linear-gradient(to bottom, transparent, var(--cyan));
+    animation-name:fall;
+    animation-timing-function:linear;
+    animation-iteration-count:infinite;
+}
+
+@keyframes fall{
+    from{ transform:translateY(0); }
+    to{ transform:translateY(112vh); }
+}
+
+@media (prefers-reduced-motion:reduce){
+    .cloud, .rain .drop{ animation:none !important; }
 }
 
 .page{
+    position:relative;
+    z-index:1;
     max-width:460px;
     margin:0 auto;
     padding:24px 20px 40px 20px;
 }
+
+/* ---- Entrance ---- */
+@keyframes riseIn{
+    from{ opacity:0; transform:translateY(14px); }
+    to{ opacity:1; transform:translateY(0); }
+}
+
+.topbar, .area, .hero, .grid .card, .warnings-section, .update{
+    animation:riseIn 0.6s cubic-bezier(.2,.9,.25,1) both;
+}
+.area{ animation-delay:0.05s; }
+.hero{ animation-delay:0.1s; }
+.grid .card:nth-child(1){ animation-delay:0.16s; }
+.grid .card:nth-child(2){ animation-delay:0.2s; }
+.grid .card:nth-child(3){ animation-delay:0.24s; }
+.grid .card:nth-child(4){ animation-delay:0.28s; }
+.warnings-section{ animation-delay:0.34s; }
+.update{ animation-delay:0.4s; }
 
 /* ---- Header ---- */
 .topbar .brand{
@@ -111,6 +202,15 @@ h1{
     font-weight:700;
     letter-spacing:-0.03em;
     line-height:1;
+}
+
+.hero.risk{
+    animation:riseIn 0.6s cubic-bezier(.2,.9,.25,1) both, heroGlow 2.4s ease-in-out infinite 0.6s;
+}
+
+@keyframes heroGlow{
+    0%,100%{ box-shadow:0 0 0 rgba(245,185,77,0); }
+    50%{ box-shadow:0 0 32px rgba(245,185,77,0.28); }
 }
 
 /* Rain dial: outer ring is a conic-gradient driven by --pct (0-100), set via JS */
@@ -225,6 +325,7 @@ h1{
     border-radius:16px;
     padding:14px 16px;
     margin-bottom:10px;
+    animation:riseIn 0.45s cubic-bezier(.2,.9,.25,1) both;
 }
 
 .warning-item h4{
