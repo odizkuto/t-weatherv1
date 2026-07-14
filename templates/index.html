@@ -35,10 +35,11 @@
 
   <section class="area">
     <h3>📍 Khu vực theo dõi</h3>
-    <p>GPS cố định từ nhà riêng Hữu Tài</p>
+    <p>GPS cố định từ config.py</p>
   </section>
 
   <section class="hero" id="hero">
+    <span class="ping-dot ping-cyan corner" aria-hidden="true"><span class="ring"></span><span class="core"></span></span>
     <div class="hero-left">
       <div class="hero-eyebrow">Nhiệt độ hiện tại</div>
       <div class="hero-temp"><span id="temperature">--</span></div>
@@ -53,21 +54,25 @@
 
   <section class="grid">
     <div class="card" data-bar="humidity">
+      <span class="ping-dot ping-amber corner" aria-hidden="true"><span class="ring"></span><span class="core"></span></span>
       <div class="label">💧 Độ ẩm</div>
       <div class="value"><span id="humidity">--</span></div>
       <div class="bar"><i></i></div>
     </div>
     <div class="card" data-bar="cloud">
+      <span class="ping-dot ping-amber corner" aria-hidden="true"><span class="ring"></span><span class="core"></span></span>
       <div class="label">☁ Mây</div>
       <div class="value"><span id="cloud">--</span></div>
       <div class="bar"><i></i></div>
     </div>
     <div class="card" data-bar="uv">
+      <span class="ping-dot ping-amber corner" aria-hidden="true"><span class="ring"></span><span class="core"></span></span>
       <div class="label">☀ UV</div>
       <div class="value"><span id="uv">--</span></div>
       <div class="bar"><i></i></div>
     </div>
     <div class="card" data-bar="wind">
+      <span class="ping-dot ping-amber corner" aria-hidden="true"><span class="ring"></span><span class="core"></span></span>
       <div class="label">💨 Gió</div>
       <div class="value"><span id="wind">--</span></div>
       <div class="bar"><i></i></div>
@@ -75,7 +80,7 @@
   </section>
 
   <section class="warnings-section">
-    <h3>⚠ Cảnh báo</h3>
+    <h3>⚠ Cảnh báo <span class="ping-dot ping-red hidden" id="alertPing" aria-hidden="true"><span class="ring"></span><span class="core"></span></span></h3>
     <div id="warnings">Đang tải...</div>
   </section>
 
