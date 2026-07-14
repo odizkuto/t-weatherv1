@@ -10,6 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from weather import weather
 from analyzer import analyzer
 from database import db
+from notifier import notifier
 
 
 scheduler = BackgroundScheduler()
@@ -44,6 +45,18 @@ def update_weather():
                     warning["title"],
                     warning["message"]
                 )
+
+            subscriptions = db.get_subscriptions()
+
+            expired = notifier.broadcast(
+                subscriptions,
+                result["warnings"]
+            )
+
+            if expired:
+
+                for endpoint in expired:
+                    db.remove_subscription(endpoint)
 
     except Exception as e:
 
