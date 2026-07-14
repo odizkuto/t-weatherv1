@@ -14,6 +14,36 @@ function setGauge(el, value, max) {
 }
 
 // ==========================================
+// Đổi thời gian API sang giờ Việt Nam thật (Open-Meteo trả về giờ UTC)
+// ==========================================
+
+function formatVNTime(raw) {
+
+    if (!raw) return "--";
+
+    let iso = raw;
+
+    // Nếu chuỗi không kèm thông tin múi giờ (không có Z hoặc +hh:mm) thì hiểu là giờ UTC
+    if (!/[Zz]|[+-]\d{2}:?\d{2}$/.test(iso)) {
+        iso += "Z";
+    }
+
+    const date = new Date(iso);
+
+    if (isNaN(date.getTime())) return raw;
+
+    return date.toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+    });
+
+}
+
+// ==========================================
 // Đếm số mượt: chạy từ giá trị cũ -> giá trị mới thay vì nhảy khựng
 // ==========================================
 
@@ -128,7 +158,7 @@ async function loadWeather() {
         animateNumber("wind", current.wind, 1, " km/h");
 
         document.getElementById("update").innerHTML =
-            current.time;
+            formatVNTime(current.time);
 
         // Vòng đo mưa ở khối hero
         setGauge(document.getElementById("rainDial"), current.rain_probability, 100);
