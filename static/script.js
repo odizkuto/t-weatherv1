@@ -1,3 +1,18 @@
+// ==========================================
+// Đổ dữ liệu vào thanh đo (dial mưa + bar cards)
+// value/max được giới hạn trong khoảng 0-100%
+// ==========================================
+
+function setGauge(el, value, max) {
+
+    if (!el) return;
+
+    const pct = Math.max(0, Math.min(100, (Number(value) / max) * 100));
+
+    el.style.setProperty("--pct", pct);
+
+}
+
 async function loadWeather() {
 
     try {
@@ -9,7 +24,7 @@ async function loadWeather() {
         if (data.status === "offline") {
 
             document.getElementById("warnings").innerHTML =
-                "<div class='warning-item'><h4>❌ Mất kết nối</h4><p>Không lấy được dữ liệu thời tiết.</p></div>";
+                "<div class='warning-item offline'><h4>❌ Mất kết nối</h4><p>Không lấy được dữ liệu thời tiết.</p></div>";
 
             return;
         }
@@ -23,7 +38,7 @@ async function loadWeather() {
             current.humidity + " %";
 
         document.getElementById("rain").innerHTML =
-            current.rain_probability + " %";
+            current.rain_probability;
 
         document.getElementById("cloud").innerHTML =
             current.cloud + " %";
@@ -37,6 +52,15 @@ async function loadWeather() {
         document.getElementById("update").innerHTML =
             current.time;
 
+        // Vòng đo mưa ở khối hero
+        setGauge(document.getElementById("rainDial"), current.rain_probability, 100);
+
+        // Thanh mức của từng thẻ (thang đo tham khảo, không phải ngưỡng cảnh báo)
+        setGauge(document.querySelector('[data-bar="humidity"] .bar'), current.humidity, 100);
+        setGauge(document.querySelector('[data-bar="cloud"] .bar'), current.cloud, 100);
+        setGauge(document.querySelector('[data-bar="uv"] .bar'), current.uv, 12);
+        setGauge(document.querySelector('[data-bar="wind"] .bar'), current.wind, 40);
+
         const warningBox = document.getElementById("warnings");
 
         warningBox.innerHTML = "";
@@ -44,14 +68,14 @@ async function loadWeather() {
         if (data.warnings.length === 0) {
 
             warningBox.innerHTML =
-                "<div class='warning-item'><h4>✅ An toàn</h4><p>Hiện chưa có cảnh báo.</p></div>";
+                "<div class='warning-item safe'><h4>✅ An toàn</h4><p>Hiện chưa có cảnh báo.</p></div>";
 
         } else {
 
             data.warnings.forEach(w => {
 
                 warningBox.innerHTML += `
-                    <div class="warning-item">
+                    <div class="warning-item alert">
                         <h4>${w.title}</h4>
                         <p>${w.message}</p>
                     </div>
