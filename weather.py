@@ -6,6 +6,7 @@ weather.py
 """
 
 import json
+import time
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
@@ -18,7 +19,8 @@ from config import (
     LATITUDE,
     LONGITUDE,
     BASE_URL,
-    CACHE_FILE
+    CACHE_FILE,
+    CHECK_INTERVAL
 )
 
 
@@ -26,10 +28,22 @@ class WeatherService:
 
     def __init__(self):
 
-        self.url = (
+        # Cache trong RAM cho các toạ độ ĐỘNG (điện thoại di chuyển).
+        # key: (lat làm tròn 3 số, lon làm tròn 3 số)
+        # value: (thời điểm lấy dữ liệu, data trả về từ Open-Meteo)
+        self._mem_cache = {}
+
+        # Số giây dữ liệu 1 toạ độ được coi là còn "mới" -> chưa cần
+        # gọi lại API. Lấy theo đúng chu kỳ quét để không gọi API
+        # thừa khi nhiều request đến cùng lúc cho cùng 1 vị trí.
+        self._cache_ttl = CHECK_INTERVAL * 60
+
+    def _build_url(self, latitude, longitude):
+
+        return (
             f"{BASE_URL}"
-            f"?latitude={LATITUDE}"
-            f"&longitude={LONGITUDE}"
+            f"?latitude={latitude}"
+            f"&longitude={longitude}"
             "&hourly="
             "temperature_2m,"
             "relative_humidity_2m,"
@@ -42,12 +56,39 @@ class WeatherService:
             "&timezone=auto"
         )
 
-    def fetch(self):
+    def _resolve_coords(self, latitude, longitude):
+        """
+        Không có toạ độ truyền vào (vd. trình duyệt chưa cấp quyền
+        định vị) -> dùng toạ độ mặc định trong config.py làm phương
+        án dự phòng.
+        """
+
+        if latitude is None or longitude is None:
+            return LATITUDE, LONGITUDE
+
+        return latitude, longitude
+
+    def fetch(self, latitude=None, longitude=None):
+
+        latitude, longitude = self._resolve_coords(latitude, longitude)
+
+        is_default_location = (
+            latitude == LATITUDE
+            and
+            longitude == LONGITUDE
+        )
+
+        cache_key = (round(latitude, 3), round(longitude, 3))
+
+        cached = self._mem_cache.get(cache_key)
+
+        if cached and (time.time() - cached[0]) < self._cache_ttl:
+            return cached[1]
 
         try:
 
             response = requests.get(
-                self.url,
+                self._build_url(latitude, longitude),
                 timeout=20
             )
 
@@ -55,7 +96,12 @@ class WeatherService:
 
             data = response.json()
 
-            self.save_cache(data)
+            self._mem_cache[cache_key] = (time.time(), data)
+
+            # Chỉ ghi file cache cho vị trí mặc định (dùng khi mất
+            # mạng và không có toạ độ điện thoại nào gửi lên).
+            if is_default_location:
+                self.save_cache(data)
 
             return data
 
@@ -63,7 +109,15 @@ class WeatherService:
 
             print("Weather Error:", e)
 
-            return self.load_cache()
+            # Còn cache RAM cũ (dù hết hạn) cho đúng toạ độ này thì
+            # dùng tạm, còn hơn không có gì.
+            if cached:
+                return cached[1]
+
+            if is_default_location:
+                return self.load_cache()
+
+            return None
 
     def save_cache(self, data):
 
@@ -126,9 +180,9 @@ class WeatherService:
 
         return 0
 
-    def current(self):
+    def current(self, latitude=None, longitude=None):
 
-        data = self.fetch()
+        data = self.fetch(latitude, longitude)
 
         if not data:
             return None
@@ -164,9 +218,9 @@ class WeatherService:
 
         }
 
-    def next_one_hour(self):
+    def next_one_hour(self, latitude=None, longitude=None):
 
-        data = self.fetch()
+        data = self.fetch(latitude, longitude)
 
         if not data:
             return None
