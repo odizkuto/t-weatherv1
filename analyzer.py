@@ -11,11 +11,11 @@ from config import UV_WARNING
 
 class WeatherAnalyzer:
 
-    def analyze(self, current):
+    def analyze(self, current, latitude=None, longitude=None):
 
         warnings = []
 
-        next_hour = weather.next_one_hour()
+        next_hour = weather.next_one_hour(latitude, longitude)
 
         # ==========================
         # MƯA
