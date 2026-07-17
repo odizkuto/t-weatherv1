@@ -12,6 +12,8 @@ from analyzer import analyzer
 from database import db
 from notifier import notifier
 
+from config import CHECK_INTERVAL
+
 
 scheduler = BackgroundScheduler()
 
@@ -68,7 +70,7 @@ def start():
     scheduler.add_job(
         update_weather,
         "interval",
-        minutes=10,
+        minutes=CHECK_INTERVAL,
         id="weather_job",
         replace_existing=True
     )
