@@ -132,11 +132,93 @@ function updateClouds(cloudPercent) {
 
 }
 
+// ==========================================
+// Vị trí điện thoại (GPS thật qua trình duyệt, KHÔNG dùng IP vì IP
+// nhà mạng di động sai lệch rất nhiều so với vị trí thật)
+// ==========================================
+
+// Toạ độ mới nhất biết được của máy này. null = chưa có / bị từ chối
+// quyền định vị -> app sẽ dùng vị trí mặc định trong config.py.
+let myCoords = { latitude: null, longitude: null };
+
+// endpoint của push subscription trên máy này, dùng để báo vị trí
+// mới lên server mỗi khi điện thoại di chuyển.
+let myPushEndpoint = null;
+
+function getCurrentPosition(options) {
+
+    return new Promise((resolve, reject) => {
+
+        if (!("geolocation" in navigator)) {
+            reject(new Error("Trình duyệt không hỗ trợ định vị"));
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(resolve, reject, options);
+
+    });
+
+}
+
+async function refreshMyLocation() {
+
+    try {
+
+        const position = await getCurrentPosition({
+            enableHighAccuracy: true,
+            timeout: 8000,
+            maximumAge: 60000
+        });
+
+        myCoords = {
+            latitude: position.coords.latitude,
+            longitude: position.coords.longitude
+        };
+
+        // Đã đăng ký push từ trước -> báo vị trí mới lên server để
+        // lần quét cảnh báo nền tiếp theo bám đúng vị trí hiện tại.
+        if (myPushEndpoint) {
+
+            fetch("/api/update-location", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    endpoint: myPushEndpoint,
+                    latitude: myCoords.latitude,
+                    longitude: myCoords.longitude
+                })
+            }).catch(e => console.log("Update location error:", e));
+
+        }
+
+        return true;
+
+    } catch (e) {
+
+        // Từ chối quyền / không hỗ trợ -> im lặng dùng vị trí mặc định
+        console.log("Không lấy được vị trí:", e.message || e);
+
+        return false;
+
+    }
+
+}
+
+function weatherUrl() {
+
+    if (myCoords.latitude != null && myCoords.longitude != null) {
+        return `/api/weather?lat=${myCoords.latitude}&lon=${myCoords.longitude}`;
+    }
+
+    return "/api/weather";
+
+}
+
 async function loadWeather() {
 
     try {
 
-        const response = await fetch("/api/weather");
+        const response = await fetch(weatherUrl());
 
         const data = await response.json();
 
@@ -250,11 +332,21 @@ function updateFavicon(warnings) {
 
 }
 
-// Tải lần đầu
-loadWeather();
+// Lấy vị trí thật trước, rồi mới tải thời tiết lần đầu (để hiển thị
+// đúng ngay từ đầu thay vì hiện vị trí mặc định rồi mới nhảy số).
+refreshMyLocation().finally(() => {
 
-// Tự động cập nhật mỗi 30 giây
-setInterval(loadWeather, 30000);
+    loadWeather();
+
+    // Tự động cập nhật mỗi 30 giây
+    setInterval(loadWeather, 30000);
+
+});
+
+// Điện thoại di chuyển -> làm mới vị trí mỗi 5 phút (khớp chu kỳ
+// quét nền CHECK_INTERVAL bên server) để cảnh báo đẩy luôn bám theo
+// vị trí hiện tại thay vì vị trí lúc mở app lần đầu.
+setInterval(refreshMyLocation, 5 * 60 * 1000);
 
 // ==========================================
 // Web Push: đăng ký nhận thông báo trên máy
@@ -299,10 +391,19 @@ async function subscribeToPush(registration) {
 
     }
 
+    myPushEndpoint = subscription.endpoint;
+
+    // Gửi kèm vị trí hiện tại (nếu có) ngay lúc đăng ký, để lần quét
+    // nền đầu tiên đã đúng vị trí thay vì phải chờ tới lần cập nhật
+    // vị trí định kỳ tiếp theo.
+    const payload = subscription.toJSON();
+    payload.latitude = myCoords.latitude;
+    payload.longitude = myCoords.longitude;
+
     await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(subscription)
+        body: JSON.stringify(payload)
     });
 
     console.log("Đã đăng ký nhận cảnh báo thời tiết trên máy này");
