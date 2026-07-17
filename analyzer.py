@@ -6,6 +6,7 @@ analyzer.py
 """
 
 from weather import weather
+from config import UV_WARNING
 
 
 class WeatherAnalyzer:
@@ -42,7 +43,7 @@ class WeatherAnalyzer:
         # UV
         # ==========================
 
-        if next_hour["uv"] >= 6:
+        if next_hour["uv"] >= UV_WARNING:
 
             warnings.append({
 
