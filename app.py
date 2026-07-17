@@ -44,14 +44,17 @@ def service_worker():
 @app.route("/api/weather")
 def api_weather():
 
-    current = weather.current()
+    latitude = request.args.get("lat", type=float)
+    longitude = request.args.get("lon", type=float)
+
+    current = weather.current(latitude, longitude)
 
     if current is None:
         return jsonify({
             "status": "offline"
         })
 
-    result = analyzer.analyze(current)
+    result = analyzer.analyze(current, latitude, longitude)
 
     return jsonify(result)
 
@@ -123,11 +126,50 @@ def subscribe():
     endpoint = sub.get("endpoint")
     keys = sub.get("keys", {})
 
+    # Toạ độ điện thoại tại thời điểm đăng ký (có thể không có nếu
+    # người dùng chưa cấp quyền định vị -> sẽ dùng vị trí mặc định
+    # trong config.py cho tới khi có toạ độ thật).
+    latitude = sub.get("latitude")
+    longitude = sub.get("longitude")
+
     db.add_subscription(
         endpoint,
         keys.get("p256dh"),
-        keys.get("auth")
+        keys.get("auth"),
+        latitude,
+        longitude
     )
+
+    return jsonify({"status": "ok"})
+
+
+@app.route("/api/update-location", methods=["POST"])
+def update_location():
+    """
+    Điện thoại di chuyển sang vị trí mới -> cập nhật lại toạ độ cho
+    subscription đã đăng ký, để lần quét cảnh báo nền tiếp theo dùng
+    đúng vị trí hiện tại thay vì vị trí cũ.
+    """
+
+    body = request.get_json()
+
+    if not body or "endpoint" not in body:
+        return jsonify({"status": "error", "message": "missing endpoint"}), 400
+
+    endpoint = body.get("endpoint")
+    latitude = body.get("latitude")
+    longitude = body.get("longitude")
+
+    if latitude is None or longitude is None:
+        return jsonify({"status": "error", "message": "missing coordinates"}), 400
+
+    updated = db.update_subscription_location(endpoint, latitude, longitude)
+
+    if not updated:
+        return jsonify({
+            "status": "error",
+            "message": "subscription chưa tồn tại, hãy đăng ký lại"
+        }), 404
 
     return jsonify({"status": "ok"})
 
