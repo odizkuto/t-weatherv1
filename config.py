@@ -24,7 +24,7 @@ BASE_URL = "https://api.open-meteo.com/v1/forecast"
 # Scheduler
 # ==========================
 
-CHECK_INTERVAL = 10   # phút
+CHECK_INTERVAL = 5   # phút
 
 # ==========================
 # Cảnh báo mưa
