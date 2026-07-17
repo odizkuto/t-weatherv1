@@ -18,6 +18,7 @@ class Database:
 
         self.create_table()
         self.create_subscription_table()
+        self.migrate_subscription_location()
 
     def connect(self):
 
@@ -86,6 +87,34 @@ class Database:
         )
 
         """)
+
+        conn.commit()
+
+        conn.close()
+
+    def migrate_subscription_location(self):
+        """
+        DB cũ (tạo trước khi có tính năng vị trí động) sẽ chưa có
+        2 cột latitude/longitude -> thêm vào nếu thiếu, không xoá
+        dữ liệu subscription hiện có.
+        """
+
+        conn = self.connect()
+
+        cursor = conn.cursor()
+
+        cursor.execute("PRAGMA table_info(subscriptions)")
+
+        existing_columns = [row[1] for row in cursor.fetchall()]
+
+        if "latitude" not in existing_columns:
+            cursor.execute("ALTER TABLE subscriptions ADD COLUMN latitude REAL")
+
+        if "longitude" not in existing_columns:
+            cursor.execute("ALTER TABLE subscriptions ADD COLUMN longitude REAL")
+
+        if "updated_at" not in existing_columns:
+            cursor.execute("ALTER TABLE subscriptions ADD COLUMN updated_at TEXT")
 
         conn.commit()
 
@@ -201,23 +230,34 @@ class Database:
 
         return rows
 
-    def add_subscription(self, endpoint, p256dh, auth):
+    def add_subscription(self, endpoint, p256dh, auth, latitude=None, longitude=None):
 
         conn = self.connect()
 
         cursor = conn.cursor()
 
+        now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         cursor.execute("""
 
-        INSERT OR IGNORE INTO subscriptions(endpoint, p256dh, auth, created_at)
-        VALUES(?,?,?,?)
+        INSERT INTO subscriptions(endpoint, p256dh, auth, latitude, longitude, created_at, updated_at)
+        VALUES(?,?,?,?,?,?,?)
+        ON CONFLICT(endpoint) DO UPDATE SET
+            p256dh = excluded.p256dh,
+            auth = excluded.auth,
+            latitude = excluded.latitude,
+            longitude = excluded.longitude,
+            updated_at = excluded.updated_at
 
         """, (
 
             endpoint,
             p256dh,
             auth,
-            datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            latitude,
+            longitude,
+            now,
+            now
 
         ))
 
@@ -225,13 +265,44 @@ class Database:
 
         conn.close()
 
+    def update_subscription_location(self, endpoint, latitude, longitude):
+        """
+        Điện thoại di chuyển -> cập nhật lại vị trí mới nhất cho
+        subscription này, để lần quét nền tiếp theo dùng đúng toạ độ.
+        """
+
+        conn = self.connect()
+
+        cursor = conn.cursor()
+
+        cursor.execute("""
+
+        UPDATE subscriptions
+        SET latitude = ?, longitude = ?, updated_at = ?
+        WHERE endpoint = ?
+
+        """, (
+            latitude,
+            longitude,
+            datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+            endpoint
+        ))
+
+        conn.commit()
+
+        conn.close()
+
+        return cursor.rowcount > 0
+
     def get_subscriptions(self):
 
         conn = self.connect()
 
         cursor = conn.cursor()
 
-        cursor.execute("SELECT endpoint, p256dh, auth FROM subscriptions")
+        cursor.execute(
+            "SELECT endpoint, p256dh, auth, latitude, longitude FROM subscriptions"
+        )
 
         rows = cursor.fetchall()
 
