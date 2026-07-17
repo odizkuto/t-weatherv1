@@ -8,7 +8,6 @@ analyzer.py
 from weather import weather
 from config import (
     UV_WARNING,
-    RAIN_MM,
     RAIN_PROBABILITY,
     HIGH_TEMP,
     LOW_CLOUD,
@@ -28,11 +27,7 @@ class WeatherAnalyzer:
         # MƯA
         # ==========================
 
-        if (
-            next_hour["rain"] >= RAIN_MM
-            or
-            next_hour["rain_probability"] >= RAIN_PROBABILITY
-        ):
+        if next_hour["rain_probability"] >= RAIN_PROBABILITY:
 
             warnings.append({
 
