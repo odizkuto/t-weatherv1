@@ -158,7 +158,7 @@ async function loadWeather() {
         animateNumber("wind", current.wind, 1, " km/h");
 
         document.getElementById("update").innerHTML =
-            formatVNTime(current.time);
+            current.updated_at || formatVNTime(current.time);
 
         // Vòng đo mưa ở khối hero
         setGauge(document.getElementById("rainDial"), current.rain_probability, 100);
