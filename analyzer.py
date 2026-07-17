@@ -6,7 +6,14 @@ analyzer.py
 """
 
 from weather import weather
-from config import UV_WARNING
+from config import (
+    UV_WARNING,
+    RAIN_MM,
+    RAIN_PROBABILITY,
+    HIGH_TEMP,
+    LOW_CLOUD,
+    WIND_WARNING
+)
 
 
 class WeatherAnalyzer:
@@ -22,9 +29,9 @@ class WeatherAnalyzer:
         # ==========================
 
         if (
-            next_hour["rain"] >= 0.1
+            next_hour["rain"] >= RAIN_MM
             or
-            next_hour["rain_probability"] >= 60
+            next_hour["rain_probability"] >= RAIN_PROBABILITY
         ):
 
             warnings.append({
@@ -61,9 +68,9 @@ class WeatherAnalyzer:
         # ==========================
 
         if (
-            next_hour["temperature"] >= 35
+            next_hour["temperature"] >= HIGH_TEMP
             and
-            next_hour["cloud"] <= 10
+            next_hour["cloud"] <= LOW_CLOUD
         ):
 
             warnings.append({
@@ -81,7 +88,7 @@ class WeatherAnalyzer:
         # GIÓ
         # ==========================
 
-        if next_hour["wind"] >= 40:
+        if next_hour["wind"] >= WIND_WARNING:
 
             warnings.append({
 
