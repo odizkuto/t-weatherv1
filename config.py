@@ -50,15 +50,14 @@ LOW_CLOUD = 10
 WIND_WARNING = 40   # km/h
 
 # ==========================
-# Tấm pin năng lượng mặt trời (mô phỏng)
+# Tấm pin năng lượng mặt trời
 # ==========================
-# Diện tích tấm pin (m2) và hiệu suất chuyển đổi (0-1) dùng để ước
-# tính công suất/năng lượng thu được từ bức xạ mặt trời thực tế.
-# Đổi 2 giá trị này theo đúng tấm pin bạn có (hoặc định lắp).
+# Thông số THẬT ghi trên tấm pin của bạn (tem sau lưng pin, mục
+# "STC" - Standard Test Condition). Đổi đúng theo tấm pin đang có.
 
-SOLAR_PANEL_AREA_M2 = 1.0
+SOLAR_PANEL_WATT_PEAK = 75      # Công suất định mức (Wp)
 
-SOLAR_PANEL_EFFICIENCY = 0.20   # 20%
+SOLAR_PANEL_VOLTAGE = 18.0      # Điện áp hoạt động Vmp (V) - pin 75W phổ thông thường ~17-18V
 
 # ==========================
 # Database
