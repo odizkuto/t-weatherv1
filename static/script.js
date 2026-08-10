@@ -238,6 +238,12 @@ async function loadWeather() {
         animateNumber("cloud", current.cloud, 0, " %");
         animateNumber("uv", current.uv, 2, "");
         animateNumber("wind", current.wind, 1, " km/h");
+        animateNumber("solarRadiation", current.solar_radiation, 0, " W/m²");
+        animateNumber("solarPower", current.solar_power, 1, " W");
+
+        if (current.solar_today) {
+            animateNumber("solarEnergyToday", current.solar_today.panel_energy_kwh, 3, " kWh");
+        }
 
         document.getElementById("update").innerHTML =
             current.updated_at || formatVNTime(current.time);
@@ -250,6 +256,8 @@ async function loadWeather() {
         setGauge(document.querySelector('[data-bar="cloud"] .bar'), current.cloud, 100);
         setGauge(document.querySelector('[data-bar="uv"] .bar'), current.uv, 12);
         setGauge(document.querySelector('[data-bar="wind"] .bar'), current.wind, 40);
+        // Bức xạ mặt trời lý thuyết tối đa ~1000 W/m² (giữa trưa trời quang)
+        setGauge(document.querySelector('[data-bar="solar"] .bar'), current.solar_radiation, 1000);
 
         // Nền động: mưa rơi + mây đậm nhạt theo dữ liệu thật
         updateRainLayer(current.rain_probability);
