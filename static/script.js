@@ -240,9 +240,12 @@ async function loadWeather() {
         animateNumber("wind", current.wind, 1, " km/h");
         animateNumber("solarRadiation", current.solar_radiation, 0, " W/m²");
         animateNumber("solarPower", current.solar_power, 1, " W");
+        animateNumber("solarVoltage", current.solar_voltage, 1, " V");
+        animateNumber("solarCurrent", current.solar_current, 2, " A");
 
         if (current.solar_today) {
-            animateNumber("solarEnergyToday", current.solar_today.panel_energy_kwh, 3, " kWh");
+            animateNumber("solarEnergyToday", current.solar_today.energy_wh, 1, " Wh");
+            animateNumber("solarPeakHours", current.solar_today.peak_sun_hours, 2, " h");
         }
 
         document.getElementById("update").innerHTML =
@@ -256,8 +259,6 @@ async function loadWeather() {
         setGauge(document.querySelector('[data-bar="cloud"] .bar'), current.cloud, 100);
         setGauge(document.querySelector('[data-bar="uv"] .bar'), current.uv, 12);
         setGauge(document.querySelector('[data-bar="wind"] .bar'), current.wind, 40);
-        // Bức xạ mặt trời lý thuyết tối đa ~1000 W/m² (giữa trưa trời quang)
-        setGauge(document.querySelector('[data-bar="solar"] .bar'), current.solar_radiation, 1000);
 
         // Nền động: mưa rơi + mây đậm nhạt theo dữ liệu thật
         updateRainLayer(current.rain_probability);
