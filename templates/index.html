@@ -77,6 +77,27 @@
       <div class="value"><span id="wind">--</span></div>
       <div class="bar"><i></i></div>
     </div>
+    <div class="card" data-bar="solar">
+      <span class="ping-dot ping-amber corner" aria-hidden="true"><span class="ring"></span><span class="core"></span></span>
+      <div class="label">🔆 Bức xạ mặt trời</div>
+      <div class="value"><span id="solarRadiation">--</span></div>
+      <div class="bar"><i></i></div>
+    </div>
+  </section>
+
+  <section class="area solar-panel">
+    <h3>🔋 Năng lượng mặt trời thu được (mô phỏng)</h3>
+    <div class="solar-row">
+      <div>
+        <div class="solar-num"><span id="solarPower">--</span></div>
+        <div class="solar-caption">Công suất hiện tại</div>
+      </div>
+      <div>
+        <div class="solar-num"><span id="solarEnergyToday">--</span></div>
+        <div class="solar-caption">Năng lượng hôm nay</div>
+      </div>
+    </div>
+    <p class="solar-note">Ước tính theo diện tích &amp; hiệu suất tấm pin khai báo trong <code>config.py</code></p>
   </section>
 
   <section class="warnings-section">
