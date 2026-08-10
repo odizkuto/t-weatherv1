@@ -57,7 +57,10 @@ WIND_WARNING = 40   # km/h
 
 SOLAR_PANEL_WATT_PEAK = 75      # Công suất định mức (Wp)
 
-SOLAR_PANEL_VOLTAGE = 18.0      # Điện áp hoạt động Vmp (V) - pin 75W phổ thông thường ~17-18V
+SOLAR_PANEL_VOLTAGE = 6.0       # Điện áp hoạt động Vmp (V) - theo tem pin thật
+
+SOLAR_PANEL_WIDTH_CM = 35       # Kích thước tấm pin mono (tham khảo, không dùng để tính công suất)
+SOLAR_PANEL_HEIGHT_CM = 70
 
 # ==========================
 # Database
