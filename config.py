@@ -50,6 +50,17 @@ LOW_CLOUD = 10
 WIND_WARNING = 40   # km/h
 
 # ==========================
+# Tấm pin năng lượng mặt trời (mô phỏng)
+# ==========================
+# Diện tích tấm pin (m2) và hiệu suất chuyển đổi (0-1) dùng để ước
+# tính công suất/năng lượng thu được từ bức xạ mặt trời thực tế.
+# Đổi 2 giá trị này theo đúng tấm pin bạn có (hoặc định lắp).
+
+SOLAR_PANEL_AREA_M2 = 1.0
+
+SOLAR_PANEL_EFFICIENCY = 0.20   # 20%
+
+# ==========================
 # Database
 # ==========================
 
