@@ -21,8 +21,8 @@ from config import (
     BASE_URL,
     CACHE_FILE,
     CHECK_INTERVAL,
-    SOLAR_PANEL_AREA_M2,
-    SOLAR_PANEL_EFFICIENCY
+    SOLAR_PANEL_WATT_PEAK,
+    SOLAR_PANEL_VOLTAGE
 )
 
 
@@ -224,25 +224,47 @@ class WeatherService:
             # Bức xạ mặt trời tức thời (W/m2) đo được tại đúng giờ hiện tại
             "solar_radiation": hourly["shortwave_radiation"][i],
 
-            # Công suất tấm pin mô phỏng thu được ngay lúc này (W),
-            # tính theo diện tích + hiệu suất khai báo trong config.py
-            "solar_power":
+            # Công suất tấm pin thật (W) - quy đổi theo chuẩn STC:
+            # ở 1000 W/m2 pin cho ra đúng công suất định mức (Wp).
+            "solar_power": self._solar_power(hourly["shortwave_radiation"][i]),
+
+            # Điện áp hoạt động danh định (V) - lấy từ config, không
+            # đổi theo bức xạ (pin MPPT/PWM sẽ tự giữ quanh mức này).
+            "solar_voltage": SOLAR_PANEL_VOLTAGE,
+
+            # Dòng điện ước tính (A) = Công suất / Điện áp
+            "solar_current":
                 round(
-                    hourly["shortwave_radiation"][i]
-                    * SOLAR_PANEL_AREA_M2
-                    * SOLAR_PANEL_EFFICIENCY,
-                    1
-                ),
+                    self._solar_power(hourly["shortwave_radiation"][i])
+                    / SOLAR_PANEL_VOLTAGE,
+                    2
+                ) if SOLAR_PANEL_VOLTAGE else 0,
 
             "solar_today": self._solar_today(data)
 
         }
 
+    def _solar_power(self, radiation):
+        """
+        Quy đổi bức xạ (W/m2) sang công suất pin thật (W) theo chuẩn
+        STC: 1000 W/m2 nắng chuẩn -> pin cho đúng công suất định mức
+        (Wp ghi trên tem). Giới hạn không vượt quá Wp vì bức xạ thực
+        tế đôi khi vượt 1000 W/m2 (phản xạ mây) nhưng pin không thể
+        phát quá công suất định mức.
+        """
+
+        power = (radiation / 1000) * SOLAR_PANEL_WATT_PEAK
+
+        return round(min(power, SOLAR_PANEL_WATT_PEAK), 1)
+
     def _solar_today(self, data):
         """
-        Tổng năng lượng mặt trời ước tính thu được trong NGÀY HÔM NAY
-        (từ 00:00 tới hiện tại theo dự báo), dựa trên
-        shortwave_radiation_sum (MJ/m2/ngày) mà Open-Meteo trả về.
+        Tổng năng lượng ước tính pin thu được trong NGÀY HÔM NAY, dựa
+        trên shortwave_radiation_sum (MJ/m2/ngày) Open-Meteo trả về.
+
+        Quy đổi: tổng bức xạ ngày (kWh/m2) = số "giờ nắng chuẩn"
+        (peak sun hours) trong ngày đó. Nhân với Wp ra Wh pin thu được
+        - đây là công thức ước lượng chuẩn PVWatts hay dùng.
         """
 
         try:
@@ -256,21 +278,17 @@ class WeatherService:
             radiation_mj = daily["shortwave_radiation_sum"][idx]
 
             # 1 MJ/m2 = 0.277778 kWh/m2
-            energy_kwh_per_m2 = radiation_mj * 0.277778
+            peak_sun_hours = radiation_mj * 0.277778
 
-            panel_energy_kwh = (
-                energy_kwh_per_m2
-                * SOLAR_PANEL_AREA_M2
-                * SOLAR_PANEL_EFFICIENCY
-            )
+            energy_wh = peak_sun_hours * SOLAR_PANEL_WATT_PEAK
 
             return {
 
-                "radiation_mj_m2": radiation_mj,
+                "peak_sun_hours": round(peak_sun_hours, 2),
 
-                "energy_kwh_m2": round(energy_kwh_per_m2, 3),
+                "energy_wh": round(energy_wh, 1),
 
-                "panel_energy_kwh": round(panel_energy_kwh, 3)
+                "energy_kwh": round(energy_wh / 1000, 3)
 
             }
 
