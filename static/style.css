@@ -177,40 +177,95 @@ h1{
 
 /* ---- Solar panel ---- */
 .solar-panel{
+    position:relative;
     margin-top:14px;
     background:linear-gradient(160deg, var(--bg-1), var(--card));
     border:1px solid var(--stroke);
-    border-radius:20px;
-    padding:16px 18px;
+    border-radius:26px;
+    padding:20px 20px 18px;
 }
 
-.solar-row{
+.solar-head{
     display:flex;
-    gap:24px;
-    margin-top:10px;
+    align-items:center;
+    justify-content:space-between;
+}
+
+.solar-head h3{
+    font-size:14px;
+    font-weight:600;
+    color:var(--text);
+    display:flex;
+    align-items:center;
+    gap:8px;
+}
+
+.solar-wp{
+    font-family:'JetBrains Mono',monospace;
+    font-size:11px;
+    font-weight:600;
+    color:var(--bg-0);
+    background:var(--amber);
+    padding:2px 8px;
+    border-radius:999px;
+}
+
+.solar-grid{
+    display:grid;
+    grid-template-columns:repeat(4, 1fr);
+    gap:10px;
+    margin-top:16px;
+}
+
+.solar-stat{
+    text-align:center;
+    background:rgba(245,185,77,0.06);
+    border:1px solid rgba(245,185,77,0.16);
+    border-radius:16px;
+    padding:12px 6px;
 }
 
 .solar-num{
     font-family:'JetBrains Mono',monospace;
-    font-size:22px;
+    font-size:16px;
     font-weight:700;
     color:var(--amber);
+    white-space:nowrap;
 }
 
 .solar-caption{
-    font-size:11.5px;
+    font-size:10.5px;
     color:var(--mist-dim);
-    margin-top:2px;
+    margin-top:4px;
 }
 
-.solar-note{
-    margin-top:10px;
-    font-size:11px;
-    color:var(--mist-dim);
+.solar-today{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-top:16px;
+    padding-top:16px;
+    border-top:1px dashed var(--stroke);
 }
 
-.solar-note code{
-    color:var(--mist);
+.solar-today-num{
+    font-family:'JetBrains Mono',monospace;
+    font-size:22px;
+    font-weight:700;
+    color:var(--text);
+}
+
+.solar-sun{
+    text-align:right;
+}
+
+.solar-sun .solar-today-num{
+    color:var(--cyan);
+}
+
+@media (max-width:380px){
+    .solar-grid{ grid-template-columns:repeat(2, 1fr); }
 }
 
 /* ---- Hero ---- */
