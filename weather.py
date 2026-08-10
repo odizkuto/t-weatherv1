@@ -20,7 +20,9 @@ from config import (
     LONGITUDE,
     BASE_URL,
     CACHE_FILE,
-    CHECK_INTERVAL
+    CHECK_INTERVAL,
+    SOLAR_PANEL_AREA_M2,
+    SOLAR_PANEL_EFFICIENCY
 )
 
 
@@ -51,7 +53,10 @@ class WeatherService:
             "precipitation_probability,"
             "cloud_cover,"
             "uv_index,"
-            "wind_speed_10m"
+            "wind_speed_10m,"
+            "shortwave_radiation"
+            "&daily="
+            "shortwave_radiation_sum"
             "&forecast_days=2"
             "&timezone=auto"
         )
@@ -214,9 +219,66 @@ class WeatherService:
 
             "uv": hourly["uv_index"][i],
 
-            "wind": hourly["wind_speed_10m"][i]
+            "wind": hourly["wind_speed_10m"][i],
+
+            # Bức xạ mặt trời tức thời (W/m2) đo được tại đúng giờ hiện tại
+            "solar_radiation": hourly["shortwave_radiation"][i],
+
+            # Công suất tấm pin mô phỏng thu được ngay lúc này (W),
+            # tính theo diện tích + hiệu suất khai báo trong config.py
+            "solar_power":
+                round(
+                    hourly["shortwave_radiation"][i]
+                    * SOLAR_PANEL_AREA_M2
+                    * SOLAR_PANEL_EFFICIENCY,
+                    1
+                ),
+
+            "solar_today": self._solar_today(data)
 
         }
+
+    def _solar_today(self, data):
+        """
+        Tổng năng lượng mặt trời ước tính thu được trong NGÀY HÔM NAY
+        (từ 00:00 tới hiện tại theo dự báo), dựa trên
+        shortwave_radiation_sum (MJ/m2/ngày) mà Open-Meteo trả về.
+        """
+
+        try:
+
+            daily = data["daily"]
+
+            today = datetime.now(LOCATION_TZ).strftime("%Y-%m-%d")
+
+            idx = daily["time"].index(today)
+
+            radiation_mj = daily["shortwave_radiation_sum"][idx]
+
+            # 1 MJ/m2 = 0.277778 kWh/m2
+            energy_kwh_per_m2 = radiation_mj * 0.277778
+
+            panel_energy_kwh = (
+                energy_kwh_per_m2
+                * SOLAR_PANEL_AREA_M2
+                * SOLAR_PANEL_EFFICIENCY
+            )
+
+            return {
+
+                "radiation_mj_m2": radiation_mj,
+
+                "energy_kwh_m2": round(energy_kwh_per_m2, 3),
+
+                "panel_energy_kwh": round(panel_energy_kwh, 3)
+
+            }
+
+        except Exception as e:
+
+            print("Solar Today Error:", e)
+
+            return None
 
     def next_one_hour(self, latitude=None, longitude=None):
 
@@ -248,7 +310,9 @@ class WeatherService:
 
             "uv": hourly["uv_index"][j],
 
-            "wind": hourly["wind_speed_10m"][j]
+            "wind": hourly["wind_speed_10m"][j],
+
+            "solar_radiation": hourly["shortwave_radiation"][j]
 
         }
 
