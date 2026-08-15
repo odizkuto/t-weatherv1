@@ -341,6 +341,33 @@ function updateFavicon(warnings) {
 
 }
 
+// ==========================================
+// Đồng hồ giờ:phút:giây thời gian thực (giờ máy người dùng)
+// ==========================================
+
+function updateClock() {
+
+    const el = document.getElementById("clockSection");
+    if (!el) return;
+
+    const now = new Date();
+
+    const pad = n => String(n).padStart(2, "0");
+
+    document.getElementById("clockHour").textContent = pad(now.getHours());
+    document.getElementById("clockMinute").textContent = pad(now.getMinutes());
+    document.getElementById("clockSecond").textContent = pad(now.getSeconds());
+
+    const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"];
+    const dateStr = `${days[now.getDay()]}, ${pad(now.getDate())}/${pad(now.getMonth() + 1)}/${now.getFullYear()}`;
+
+    document.getElementById("clockDate").textContent = dateStr;
+
+}
+
+updateClock();
+setInterval(updateClock, 1000);
+
 // Lấy vị trí thật trước, rồi mới tải thời tiết lần đầu (để hiển thị
 // đúng ngay từ đầu thay vì hiện vị trí mặc định rồi mới nhảy số).
 refreshMyLocation().finally(() => {
