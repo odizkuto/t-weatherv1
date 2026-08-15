@@ -268,6 +268,47 @@ h1{
     .solar-grid{ grid-template-columns:repeat(2, 1fr); }
 }
 
+/* ---- Clock ---- */
+.clock-section{
+    margin-top:14px;
+    background:linear-gradient(160deg, var(--bg-1), var(--card));
+    border:1px solid var(--stroke);
+    border-radius:26px;
+    padding:20px 16px;
+    text-align:center;
+}
+
+.clock-date{
+    font-size:13px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color:var(--mist-dim);
+    margin-bottom:6px;
+}
+
+.clock-time{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:64px;
+    font-weight:700;
+    letter-spacing:0.02em;
+    line-height:1;
+    color:var(--cyan);
+    font-variant-numeric:tabular-nums;
+}
+
+.clock-colon{
+    opacity:0.55;
+    animation:clockBlink 1s step-start infinite;
+}
+
+@keyframes clockBlink{
+    50%{ opacity:0.15; }
+}
+
+@media (max-width:380px){
+    .clock-time{ font-size:48px; }
+}
+
 /* ---- Hero ---- */
 .hero{
     position:relative;
